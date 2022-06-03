@@ -44,3 +44,11 @@ SELECT curso.nome,
 	JOIN aluno_curso ON aluno_curso.curso_id = curso.id
 GROUP BY 1
 ORDER BY numero_alunos DESC;
+
+-- Operador in
+SELECT * FROM curso WHERE categoria_id IN (1, 2);
+
+-- Queries alinhadas
+SELECT * FROM curso WHERE categoria_id IN (
+	SELECT id from categoria WHERE nome NOT LIKE '% %'
+);
