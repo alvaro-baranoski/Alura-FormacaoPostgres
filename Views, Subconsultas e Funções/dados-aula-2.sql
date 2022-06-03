@@ -52,3 +52,11 @@ SELECT * FROM curso WHERE categoria_id IN (1, 2);
 SELECT * FROM curso WHERE categoria_id IN (
 	SELECT id from categoria WHERE nome NOT LIKE '% %'
 );
+
+-- Funções postgres
+SELECT 
+	CONCAT(primeiro_nome, ' ', ultimo_nome) AS nome_completo,
+	EXTRACT (YEAR FROM AGE(data_nascimento)) AS idade
+FROM aluno;
+
+SELECT TO_CHAR(NOW(), 'DD, MONTH, YYYY');
