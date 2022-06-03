@@ -27,3 +27,20 @@ INSERT INTO curso (nome, categoria_id) VALUES
 	('Power BI', 4);
 	
 INSERT INTO aluno_curso VALUES (1, 4), (1, 11), (2, 1), (2, 2), (3, 4), (3, 3), (4, 4), (4, 6), (4, 5);
+
+-- Criação de relatórios
+SELECT aluno.primeiro_nome, 
+		aluno.ultimo_nome, 
+		COUNT(aluno_curso.curso_id) numero_cursos 
+	FROM aluno
+	JOIN aluno_curso ON aluno_curso.aluno_id = aluno.id
+GROUP BY 1, 2
+ORDER BY numero_cursos DESC;
+
+-- Curso mais requisitado
+SELECT curso.nome,
+		COUNT(aluno_curso.curso_id) numero_alunos 
+	FROM curso
+	JOIN aluno_curso ON aluno_curso.curso_id = curso.id
+GROUP BY 1
+ORDER BY numero_alunos DESC;
