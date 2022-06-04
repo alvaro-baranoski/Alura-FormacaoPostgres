@@ -1,77 +1,48 @@
-INSERT INTO aluno (primeiro_nome, ultimo_nome, data_nascimento) VALUES (
-	'Vinicius', 'Dias', '1997-10-15'
-), (
-	'Patricia', 'Freitas', '1986-10-25'
-), (
-	'Diogo', 'Oliveira', '1984-08-27'
-), (
-	'Maria', 'Rosa', '1985-01-01'
+CREATE SCHEMA academico;
+
+CREATE TABLE IF NOT EXISTS academico.aluno (
+    id SERIAL PRIMARY KEY,
+	primeiro_nome VARCHAR(255) NOT NULL,
+	ultimo_nome VARCHAR(255) NOT NULL,
+	data_nascimento DATE NOT NULL
 );
 
-INSERT INTO categoria (nome) VALUES ('Front-end'), ('Programação'), ('Bancos de dados'), ('Data Science');
-
-INSERT INTO curso (nome, categoria_id) VALUES
-	('HTML', 1),
-	('CSS', 1),
-	('JS', 1),
-	('PHP', 2),
-	('Java', 2),
-	('C++', 2),
-	('PostgreSQL', 3),
-	('MySQL', 3),
-	('Oracle', 3),
-	('SQL Server', 3),
-	('SQLite', 3),
-	('Pandas', 4),
-	('Machine Learning', 4),
-	('Power BI', 4);
-	
-INSERT INTO aluno_curso VALUES (1, 4), (1, 11), (2, 1), (2, 2), (3, 4), (3, 3), (4, 4), (4, 6), (4, 5);
-
--- Criação de relatórios
-SELECT aluno.primeiro_nome, 
-		aluno.ultimo_nome, 
-		COUNT(aluno_curso.curso_id) numero_cursos 
-	FROM aluno
-	JOIN aluno_curso ON aluno_curso.aluno_id = aluno.id
-GROUP BY 1, 2
-ORDER BY numero_cursos DESC;
-
--- Curso mais requisitado
-SELECT curso.nome,
-		COUNT(aluno_curso.curso_id) numero_alunos 
-	FROM curso
-	JOIN aluno_curso ON aluno_curso.curso_id = curso.id
-GROUP BY 1
-ORDER BY numero_alunos DESC;
-
--- Operador in
-SELECT * FROM curso WHERE categoria_id IN (1, 2);
-
--- Queries alinhadas
-SELECT * FROM curso WHERE categoria_id IN (
-	SELECT id from categoria WHERE nome NOT LIKE '% %'
+CREATE TABLE IF NOT EXISTS academico.categoria (
+    id SERIAL PRIMARY KEY,
+	nome VARCHAR(255) NOT NULL UNIQUE
 );
 
--- Funções postgres
-SELECT 
-	CONCAT(primeiro_nome, ' ', ultimo_nome) AS nome_completo,
-	EXTRACT (YEAR FROM AGE(data_nascimento)) AS idade
-FROM aluno;
+CREATE TABLE IF NOT EXISTS academico.curso (
+    id SERIAL PRIMARY KEY,
+	nome VARCHAR(255) NOT NULL,
+	categoria_id INTEGER NOT NULL REFERENCES academico.categoria(id)
+);
 
-SELECT TO_CHAR(NOW(), 'DD, MONTH, YYYY');
+CREATE TABLE IF NOT EXISTS academico.aluno_curso (
+	aluno_id INTEGER NOT NULL REFERENCES academico.aluno(id),
+	curso_id INTEGER NOT NULL REFERENCES academico.curso(id),
+	PRIMARY KEY (aluno_id, curso_id)
+);
 
--- Views
-CREATE VIEW vw_cursos_por_categoria AS
-	SELECT 
-		categoria.nome AS categoria,
-		COUNT(curso.id) AS numero_cursos
-	FROM categoria
-	JOIN curso ON curso.categoria_id = categoria.id
-	GROUP BY categoria
-	
-SELECT * FROM vw_cursos_por_categoria
+CREATE TEMPORARY TABLE a (
+	coluna VARCHAR(255) NOT NULL CHECK(coluna <> '')
+);
 
-SELECT categoria.id, vw_cursos_por_categoria.* 
-	FROM vw_cursos_por_categoria
-	JOIN categoria ON categoria.nome = vw_cursos_por_categoria.categoria;
+ALTER TABLE a RENAME TO teste;
+SELECT * FROM teste;
+
+ALTER TABLE teste RENAME coluna TO obs;
+SELECT * FROM teste;
+
+-- Inclusão de dados
+CREATE TEMPORARY TABLE cursos_programacao (
+	id_curso INTEGER PRIMARY KEY,
+	nome_curso VARCHAR(255) NOT NULL
+);
+
+INSERT INTO cursos_programacao
+SELECT academico.curso.id, academico.curso.nome
+FROM academico.curso
+WHERE categoria_id = 2;
+
+SELECT * FROM cursos_programacao;
