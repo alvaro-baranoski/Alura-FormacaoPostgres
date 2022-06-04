@@ -59,4 +59,10 @@ ROLLBACK;
 BEGIN;
 DELETE FROM teste.cursos_programacao WHERE id_curso = 50;
 COMMIT;
+
+-- Particularidades postgres
+CREATE SEQUENCE eu_criei;
+SELECT NEXTVAL('eu_criei');
+
+CREATE TYPE CLASSIFICACAO AS ENUM ('LIVRE', '12_ANOS', '14_ANOS', '16_ANOS', '18_ANOS');
 	
