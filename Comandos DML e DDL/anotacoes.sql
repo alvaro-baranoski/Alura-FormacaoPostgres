@@ -46,3 +46,17 @@ FROM academico.curso
 WHERE categoria_id = 2;
 
 SELECT * FROM cursos_programacao;
+
+-- Alteração de dados
+UPDATE teste.cursos_programacao SET nome_curso = nome
+	FROM academico.curso WHERE teste.cursos_programacao.id_curso = academico.curso.id
+	AND academico.curso.id < 10;
+	
+BEGIN;
+DELETE FROM teste.cursos_programacao;
+ROLLBACK;
+
+BEGIN;
+DELETE FROM teste.cursos_programacao WHERE id_curso = 50;
+COMMIT;
+	
