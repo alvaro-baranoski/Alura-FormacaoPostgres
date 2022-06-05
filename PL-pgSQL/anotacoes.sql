@@ -104,3 +104,30 @@ $$ LANGUAGE plpgsql;
 SELECT nome, salario_ok(instrutor.id) FROM instrutor;
 
 -- Estruturas de repetição
+CREATE OR REPLACE FUNCTION tabuada(numero INTEGER) RETURNS SETOF INTEGER AS $$
+	DECLARE
+		multiplicador INTEGER DEFAULT 1;
+	BEGIN
+		-- Possível também fazer com WHILE multiplicador < 10 LOOP
+		-- Ou LOOP ... EXIT WHEN multiplicador := 10
+		FOR mult IN 1..9
+		LOOP
+			RETURN NEXT numero * mult;
+		END LOOP;
+	END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION instrutor_com_salario(OUT nome VARCHAR, OUT salario_ok VARCHAR) RETURNS SETOF record AS $$
+	DECLARE instrutor instrutor;
+	BEGIN
+		FOR instrutor IN SELECT * FROM instrutor LOOP
+			nome := instrutor.nome;
+			salario_ok = salario_ok(instrutor.id);
+			RETURN NEXT;
+		END LOOP;
+	END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM instrutor_com_salario();
+
+SELECT tabuada(9);
