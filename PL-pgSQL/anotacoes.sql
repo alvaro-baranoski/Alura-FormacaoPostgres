@@ -58,3 +58,16 @@ CREATE FUNCTION soma_e_produto (IN INTEGER, IN INTEGER) RETURNS soma_produto AS 
 $$ LANGUAGE SQL;
 
 SELECT * FROM soma_e_produto(3, 3);
+
+-- Linguagem procedual (PL / plpgSQL)
+CREATE OR REPLACE FUNCTION primeira_pl() RETURNS INTEGER AS $$
+	DECLARE 
+		primeira_variavel INTEGER DEFAULT 3;
+	BEGIN
+		primeira_variavel := primeira_variavel * 2;
+		-- Vários comandos em SQL
+		RETURN primeira_variavel;
+	END;
+$$ LANGUAGE plpgsql;
+
+SELECT primeira_pl();
