@@ -71,3 +71,36 @@ CREATE OR REPLACE FUNCTION primeira_pl() RETURNS INTEGER AS $$
 $$ LANGUAGE plpgsql;
 
 SELECT primeira_pl();
+
+-- Estruturas de controle
+CREATE OR REPLACE FUNCTION salario_ok(id_instrutor INTEGER) RETURNS VARCHAR AS $$
+	DECLARE 
+		instrutor instrutor;
+	BEGIN
+		SELECT * FROM instrutor WHERE id = id_instrutor INTO instrutor;
+		
+		/*
+		IF instrutor.salario > 300 THEN
+			RETURN 'Salário está ok';
+		ELSEIF instrutor.salario = 300 THEN
+			RETURN 'Salário pode aumentar';
+		ELSE
+			RETURN 'Salário está defasado';
+		END IF;
+		*/
+		CASE instrutor.salario
+			WHEN 100 THEN
+				RETURN 'Salário muito baixo';
+			WHEN 200 THEN
+				RETURN 'Salário baixo';
+			WHEN 300 THEN
+				RETURN 'Salário ok';
+			ELSE
+				RETURN 'Salário ótimo';
+			END CASE;
+		END;
+$$ LANGUAGE plpgsql;
+
+SELECT nome, salario_ok(instrutor.id) FROM instrutor;
+
+-- Estruturas de repetição
