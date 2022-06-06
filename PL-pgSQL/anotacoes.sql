@@ -131,3 +131,64 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM instrutor_com_salario();
 
 SELECT tabuada(9);
+
+-- Mão na massa
+CREATE FUNCTION cria_curso(nome_curso VARCHAR, nome_categoria VARCHAR) RETURNS void AS $$
+	DECLARE
+		id_categoria INTEGER;
+	BEGIN
+		SELECT id FROM academico.categoria WHERE nome = nome_categoria INTO id_categoria;
+		IF NOT FOUND THEN
+			INSERT INTO academico.categoria (nome) VALUES (nome_categoria) RETURNING id INTO id_categoria;
+		END IF;
+		
+		INSERT INTO academico.curso (nome, categoria_id) VALUES (nome_curso, id_categoria);
+	END;
+$$ LANGUAGE plpgsql;
+
+SELECT cria_curso('React', 'Frameworks');
+SELECT * FROM academico.curso;
+SELECT * FROM academico.categoria;
+
+CREATE TABLE log_instrutores (
+	id SERIAL PRIMARY KEY,
+	log VARCHAR(255),
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION cria_instrutor (nome_instrutor VARCHAR, salario_instrutor DECIMAL) RETURNS void AS $$
+	DECLARE
+		id_instrutor_inserido INTEGER;
+		media_salarial DECIMAL;
+		instrutores_recebem_menos INTEGER DEFAULT 0;
+		instrutores_total INTEGER DEFAULT 0;
+		salario DECIMAL;
+		percentual DECIMAL;
+	BEGIN
+		INSERT INTO instrutor (nome, salario) VALUES (nome_instrutor, salario_instrutor) RETURNING id INTO id_instrutor_inserido;
+		
+		SELECT AVG(instrutor.salario) FROM instrutor WHERE id <> id_instrutor_inserido INTO media_salarial;
+		
+		IF salario_instrutor > media_salarial THEN
+			INSERT INTO log_instrutores (log) VALUES (nome_instrutor || 'Recebe acima da média');
+		END IF;
+		
+		FOR salario IN SELECT instrutor.salario FROM instrutor WHERE id <> id_instrutor_inserido LOOP
+			instrutores_total := instrutores_total + 1;
+			
+			IF salario_instrutor > salario THEN
+				instrutores_recebem_menos := instrutores_recebem_menos + 1;
+			END IF;
+		END LOOP;
+		
+		percentual = instrutores_recebem_menos::DECIMAL / instrutores_total::DECIMAL * 100;
+		
+		INSERT INTO log_instrutores (log)
+			VALUES (nome_instrutor || ' recebe mais do que ' || percentual || '% da grade de instrutores');
+	END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM instrutor;
+SELECT * FROM log_instrutores;
+SELECT cria_instrutor('Cristiane Paz', 1000);
+SELECT cria_instrutor('Cristiane Outra', 400);
