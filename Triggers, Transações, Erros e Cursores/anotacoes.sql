@@ -13,6 +13,7 @@ CREATE OR REPLACE FUNCTION cria_instrutor () RETURNS TRIGGER AS $$
 		instrutores_total INTEGER DEFAULT 0;
 		salario DECIMAL;
 		percentual DECIMAL (5, 2);
+		cursor_salarios refcursor;
 	BEGIN
 		
 		SELECT AVG(instrutor.salario) FROM instrutor WHERE id <> NEW.id INTO media_salarial;
@@ -21,7 +22,10 @@ CREATE OR REPLACE FUNCTION cria_instrutor () RETURNS TRIGGER AS $$
 			INSERT INTO log_instrutores (log) VALUES (NEW.nome || 'Recebe acima da média');
 		END IF;
 		
-		FOR salario IN SELECT instrutor.salario FROM instrutor WHERE id <> NEW.id LOOP
+		SELECT instrutores_internos(NEW.id) INTO cursor_salarios;
+		LOOP
+			FETCH cursor_salarios INTO salario;
+			EXIT WHEN NOT FOUND;
 			instrutores_total := instrutores_total + 1;
 			
 			IF NEW.salario > salario THEN
@@ -49,3 +53,16 @@ SELECT cria_instrutor('Cristiane Paz', 2000);
 SELECT cria_instrutor('Cristiane Outra', 400);
 
 INSERT INTO instrutor (nome, salario) VALUES ('Daniela Gomes', 10000);
+
+-- Cursores
+CREATE OR REPLACE FUNCTION instrutores_internos(id_instrutor INTEGER) RETURNS refcursor AS $$
+	DECLARE
+		cursor_salario refcursor;
+	BEGIN
+		-- Very big query
+		OPEN cursor_salario FOR SELECT instrutor.salario 
+			FROM instrutor WHERE id <> id_instrutor AND salario > 0;
+			
+		RETURN cursor_salario;
+	END;
+$$ LANGUAGE plpgsql;
