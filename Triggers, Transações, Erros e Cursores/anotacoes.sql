@@ -30,6 +30,7 @@ CREATE OR REPLACE FUNCTION cria_instrutor () RETURNS TRIGGER AS $$
 		END LOOP;
 		
 		percentual = instrutores_recebem_menos::DECIMAL / instrutores_total::DECIMAL * 100;
+		ASSERT percentual < 100::DECIMAL, 'Erro em regra de negócio!';
 		
 		INSERT INTO log_instrutores (log)
 			VALUES (NEW.nome || ' recebe mais do que ' || percentual || '% da grade de instrutores');
@@ -38,12 +39,13 @@ CREATE OR REPLACE FUNCTION cria_instrutor () RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER cria_log_instrutores AFTER INSERT ON instrutor
+DROP TRIGGER cria_log_instrutores ON instrutor;
+CREATE TRIGGER cria_log_instrutores BEFORE INSERT ON instrutor
 	FOR EACH ROW EXECUTE FUNCTION cria_instrutor();
 
 SELECT * FROM instrutor;
 SELECT * FROM log_instrutores;
-SELECT cria_instrutor('Cristiane Paz', 1000);
+SELECT cria_instrutor('Cristiane Paz', 2000);
 SELECT cria_instrutor('Cristiane Outra', 400);
 
-INSERT INTO instrutor (nome, salario) VALUES ('Daniela Gomes', 600);
+INSERT INTO instrutor (nome, salario) VALUES ('Daniela Gomes', 10000);
